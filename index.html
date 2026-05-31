@@ -3,145 +3,377 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TQQQ 진입 신호 대시보드</title>
+<title>TQQQ Signal Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a;
-    --text: #e8eaf0; --muted: #8b90a0;
-    --buy: #00d68f; --sell: #ff5c6a; --wait: #f0a500;
-    --blue: #4d9fff;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
-  header { border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
-  header span { font-size: 12px; color: var(--muted); }
-  .container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+:root {
+  --bg:#0b0e17; --surface:#131720; --surface2:#1c2030;
+  --border:#232840; --text:#e4e8f5; --muted:#6b7294;
+  --buy:#00d68f; --sell:#ff4d6a; --wait:#f5a623;
+  --blue:#4f9eff; --purple:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;min-height:100vh;font-size:14px}
 
-  /* 신호 카드 */
-  .signal-card { border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; border: 1px solid; }
-  .signal-card.BUY  { background: rgba(0,214,143,.08); border-color: rgba(0,214,143,.3); }
-  .signal-card.SELL { background: rgba(255,92,106,.08); border-color: rgba(255,92,106,.3); }
-  .signal-card.WAIT { background: rgba(240,165,0,.08);  border-color: rgba(240,165,0,.3); }
-  .signal-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-  .signal-text  { font-size: 42px; font-weight: 700; letter-spacing: -1px; }
-  .signal-text.BUY  { color: var(--buy); }
-  .signal-text.SELL { color: var(--sell); }
-  .signal-text.WAIT { color: var(--wait); }
-  .signal-desc { font-size: 14px; color: var(--muted); max-width: 280px; line-height: 1.6; }
+/* 헤더 */
+header{
+  border-bottom:1px solid var(--border);
+  padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--buy);box-shadow:0 0 8px var(--buy)}
+.logo h1{font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--text)}
+.logo span{font-size:11px;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:20px;border:1px solid var(--border)}
+.header-right{font-size:11px;color:var(--muted);text-align:right;line-height:1.8}
 
-  /* 지표 그리드 */
-  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-  .metric-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  .metric-val   { font-size: 22px; font-weight: 600; }
-  .metric-sub   { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .up   { color: var(--buy); }
-  .down { color: var(--sell); }
-  .neutral { color: var(--blue); }
+.container{max-width:960px;margin:0 auto;padding:20px 16px}
 
-  /* 차트 */
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
-  .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--muted); }
-  canvas { max-height: 260px; }
+/* 탭 */
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:8px 16px;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.2s}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
 
-  /* 조건 체크 */
-  .conditions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
-  .cond { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .dot.ok { background: var(--buy); }
-  .dot.ng { background: var(--sell); }
+/* 신호 배너 */
+.signal-banner{
+  border-radius:14px;padding:22px 28px;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;
+  border:1px solid;gap:16px;flex-wrap:wrap;
+}
+.signal-banner.BUY {background:rgba(0,214,143,.07);border-color:rgba(0,214,143,.25)}
+.signal-banner.SELL{background:rgba(255,77,106,.07);border-color:rgba(255,77,106,.25)}
+.signal-banner.WAIT{background:rgba(245,166,35,.07);border-color:rgba(245,166,35,.25)}
+.signal-left{display:flex;align-items:center;gap:20px}
+.signal-badge{
+  font-size:28px;font-weight:800;letter-spacing:-0.5px;
+  padding:8px 20px;border-radius:10px;
+}
+.signal-badge.BUY {color:var(--buy);background:rgba(0,214,143,.12)}
+.signal-badge.SELL{color:var(--sell);background:rgba(255,77,106,.12)}
+.signal-badge.WAIT{color:var(--wait);background:rgba(245,166,35,.12)}
+.signal-info p{font-size:12px;color:var(--muted);margin-bottom:3px}
+.signal-info h2{font-size:15px;font-weight:600;color:var(--text);max-width:320px;line-height:1.5}
+.signal-date{font-size:11px;color:var(--muted);text-align:right}
 
-  /* 면책 */
-  footer { text-align: center; color: var(--muted); font-size: 11px; padding: 24px 16px 40px; line-height: 1.8; }
+/* 그리드 */
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.metric-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;
+}
+.metric-card .label{font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.metric-card .val{font-size:22px;font-weight:700;line-height:1}
+.metric-card .sub{font-size:11px;color:var(--muted);margin-top:4px}
+.metric-card .bar{height:3px;border-radius:2px;margin-top:8px;background:var(--border)}
+.metric-card .bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.up{color:var(--buy)} .down{color:var(--sell)} .neutral{color:var(--blue)} .warn{color:var(--wait)}
 
-  /* 광고 자리 */
-  .ad-slot { background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; height: 90px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+/* 조건 체크 */
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.cond{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;
+  display:flex;align-items:center;gap:10px;font-size:12px;
+}
+.cond-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cond-dot.ok{background:var(--buy);box-shadow:0 0 6px var(--buy)}
+.cond-dot.ng{background:var(--sell)}
+.cond-text{flex:1;color:var(--muted)}
+.cond-result{font-weight:600}
+.cond-result.ok{color:var(--buy)} .cond-result.ng{color:var(--sell)}
+
+/* 국채 금리 섹션 */
+.section-title{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;margin-top:4px}
+.yield-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.yield-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;
+}
+.yield-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.yield-card.normal::before{background:var(--buy)}
+.yield-card.warning::before{background:var(--wait)}
+.yield-card.danger::before{background:var(--sell)}
+.yield-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.yield-val{font-size:20px;font-weight:700}
+.yield-sub{font-size:10px;color:var(--muted);margin-top:4px}
+.yield-status{font-size:10px;font-weight:600;margin-top:6px;padding:2px 8px;border-radius:20px;display:inline-block}
+.yield-status.normal{color:var(--buy);background:rgba(0,214,143,.1)}
+.yield-status.warning{color:var(--wait);background:rgba(245,166,35,.1)}
+.yield-status.danger{color:var(--sell);background:rgba(255,77,106,.1)}
+
+/* 수익률 곡선 설명 */
+.curve-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:16px;margin-bottom:16px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.curve-status{font-size:24px;font-weight:800}
+.curve-desc{font-size:12px;color:var(--muted);line-height:1.7;flex:1;min-width:200px}
+
+/* 차트 */
+.chart-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:18px;margin-bottom:16px;
+}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.chart-title{font-size:13px;font-weight:600;color:var(--text)}
+.chart-legend{display:flex;gap:12px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:8px;height:3px;border-radius:2px}
+canvas{max-height:220px}
+
+/* 광고 */
+.ad-slot{
+  background:var(--surface);border:1px dashed var(--border);
+  border-radius:10px;height:80px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:11px;margin-bottom:16px;
+}
+
+/* 면책 */
+footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 16px 40px;line-height:2;border-top:1px solid var(--border);margin-top:8px}
+
+@media(max-width:600px){
+  .signal-banner{flex-direction:column;align-items:flex-start}
+  .cond-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+
 <header>
-  <h1>TQQQ Signal</h1>
-  <span id="updated">업데이트 중...</span>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <h1>TQQQ Signal</h1>
+    <span>NASDAQ TRACKER</span>
+  </div>
+  <div class="header-right">
+    <div id="updated">업데이트 중...</div>
+    <div>미국 장 마감 후 자동 갱신</div>
+  </div>
 </header>
 
 <div class="container">
 
-  <!-- 광고 슬롯 (애드센스 코드 여기에) -->
-  <div class="ad-slot">광고 영역 (Google AdSense)</div>
+  <div class="ad-slot">Google AdSense 광고 영역 (승인 후 코드 삽입)</div>
 
-  <!-- 오늘의 신호 -->
-  <div class="signal-card" id="signal-card">
-    <div>
-      <div class="signal-label">오늘의 TQQQ 신호</div>
-      <div class="signal-text" id="signal-text">--</div>
-    </div>
-    <div class="signal-desc" id="signal-desc">데이터 로딩 중...</div>
+  <!-- 탭 -->
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('signal',this)">신호</div>
+    <div class="tab" onclick="showTab('yield',this)">국채 금리</div>
+    <div class="tab" onclick="showTab('chart',this)">차트</div>
   </div>
 
-  <!-- 지표 -->
-  <div class="metrics">
-    <div class="metric">
-      <div class="metric-label">QQQ 현재가</div>
-      <div class="metric-val neutral" id="m-qqq">--</div>
-      <div class="metric-sub">나스닥 추종 ETF</div>
+  <!-- ── 신호 탭 ── -->
+  <div id="tab-signal">
+    <div class="signal-banner" id="signal-banner">
+      <div class="signal-left">
+        <div class="signal-badge" id="signal-badge">--</div>
+        <div class="signal-info">
+          <p>오늘의 TQQQ 진입 신호</p>
+          <h2 id="signal-desc">데이터 로딩 중...</h2>
+        </div>
+      </div>
+      <div class="signal-date" id="signal-date"></div>
     </div>
-    <div class="metric">
-      <div class="metric-label">TQQQ 현재가</div>
-      <div class="metric-val neutral" id="m-tqqq">--</div>
-      <div class="metric-sub">3배 레버리지</div>
+
+    <div class="section-title">주요 지표</div>
+    <div class="grid3">
+      <div class="metric-card">
+        <div class="label">QQQ</div>
+        <div class="val neutral" id="m-qqq">--</div>
+        <div class="sub">나스닥 추종 ETF</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">TQQQ</div>
+        <div class="val neutral" id="m-tqqq">--</div>
+        <div class="sub">3배 레버리지</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">VIX 공포지수</div>
+        <div class="val" id="m-vix">--</div>
+        <div class="sub" id="m-vix-sub">기준: 25 이하 안정</div>
+        <div class="bar"><div class="bar-fill" id="vix-bar" style="width:0%;background:var(--buy)"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="label">RSI (14일)</div>
+        <div class="val" id="m-rsi">--</div>
+        <div class="sub" id="m-rsi-sub">기준: 70 이하 정상</div>
+        <div class="bar"><div class="bar-fill" id="rsi-bar" style="width:0%;background:var(--blue)"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="label">MA 50일</div>
+        <div class="val neutral" id="m-ma50">--</div>
+        <div class="sub">단기 이동평균</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">MA 200일</div>
+        <div class="val neutral" id="m-ma200">--</div>
+        <div class="sub">장기 이동평균</div>
+      </div>
     </div>
-    <div class="metric">
-      <div class="metric-label">VIX 공포지수</div>
-      <div class="metric-val" id="m-vix">--</div>
-      <div class="metric-sub">25 이하 = 안정</div>
+
+    <div class="section-title">진입 조건 체크</div>
+    <div class="cond-grid" id="conditions"></div>
+  </div>
+
+  <!-- ── 국채 금리 탭 ── -->
+  <div id="tab-yield" style="display:none">
+    <div class="section-title">미국 국채 금리 (FRED 기준)</div>
+    <div class="yield-grid">
+      <div class="yield-card" id="y2card">
+        <div class="yield-label">2년물 금리</div>
+        <div class="yield-val" id="y2">--</div>
+        <div class="yield-sub">단기 금리 기준</div>
+        <div class="yield-status" id="y2-status">--</div>
+      </div>
+      <div class="yield-card" id="y10card">
+        <div class="yield-label">10년물 금리</div>
+        <div class="yield-val" id="y10">--</div>
+        <div class="yield-sub">장기 금리 기준</div>
+        <div class="yield-status" id="y10-status">--</div>
+      </div>
+      <div class="yield-card" id="y30card">
+        <div class="yield-label">30년물 금리</div>
+        <div class="yield-val" id="y30">--</div>
+        <div class="yield-sub">초장기 금리</div>
+        <div class="yield-status" id="y30-status">--</div>
+      </div>
+      <div class="yield-card" id="spreadcard">
+        <div class="yield-label">10Y - 2Y 스프레드</div>
+        <div class="yield-val" id="spread">--</div>
+        <div class="yield-sub">장단기 금리차</div>
+        <div class="yield-status" id="spread-status">--</div>
+      </div>
     </div>
-    <div class="metric">
-      <div class="metric-label">RSI (14)</div>
-      <div class="metric-val" id="m-rsi">--</div>
-      <div class="metric-sub">70 이하 = 정상</div>
+
+    <div class="section-title">수익률 곡선 해석</div>
+    <div class="curve-box">
+      <div class="curve-status" id="curve-emoji">--</div>
+      <div class="curve-desc" id="curve-desc">데이터 로딩 중...</div>
     </div>
-    <div class="metric">
-      <div class="metric-label">MA 50일</div>
-      <div class="metric-val neutral" id="m-ma50">--</div>
-      <div class="metric-sub">단기 이동평균</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">MA 200일</div>
-      <div class="metric-val neutral" id="m-ma200">--</div>
-      <div class="metric-sub">장기 이동평균</div>
+
+    <div class="section-title">국채 금리와 TQQQ의 관계</div>
+    <div class="grid2">
+      <div class="metric-card">
+        <div class="label">금리 상승 시 영향</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8;margin-top:6px">
+          금리↑ → 성장주 밸류에이션↓<br>
+          나스닥 하락 압력 → TQQQ 위험<br>
+          특히 10년물 4.5% 이상 주의
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="label">장단기 역전 시 영향</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8;margin-top:6px">
+          2Y > 10Y = 경기침체 신호<br>
+          역사적으로 6~18개월 후 침체<br>
+          TQQQ 비중 축소 고려 구간
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 진입 조건 체크 -->
-  <div class="conditions" id="conditions"></div>
-
-  <!-- QQQ 가격 차트 -->
-  <div class="chart-card">
-    <div class="chart-title">QQQ 가격 + 이동평균 (최근 90일)</div>
-    <canvas id="priceChart"></canvas>
-  </div>
-
-  <!-- 신호 히스토리 차트 -->
-  <div class="chart-card">
-    <div class="chart-title">신호 히스토리 — BUY(1) / WAIT(0) / SELL(-1)</div>
-    <canvas id="signalChart"></canvas>
+  <!-- ── 차트 탭 ── -->
+  <div id="tab-chart" style="display:none">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">QQQ 가격 + 이동평균 (최근 90일)</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>QQQ</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--wait)"></div>MA50</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--sell)"></div>MA200</div>
+        </div>
+      </div>
+      <canvas id="priceChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">신호 히스토리</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--buy)"></div>BUY</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--wait)"></div>WAIT</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--sell)"></div>SELL</div>
+        </div>
+      </div>
+      <canvas id="signalChart"></canvas>
+    </div>
   </div>
 
   <footer>
     ⚠️ 이 사이트는 참고용 정보만 제공합니다. 투자 권유가 아니며 모든 투자 결정과 손익은 본인 책임입니다.<br>
-    TQQQ는 일별 3배 레버리지 ETF로 장기 보유 시 변동성 감쇠가 발생할 수 있습니다.
+    TQQQ는 일별 3배 레버리지 ETF로 장기 보유 시 변동성 감쇠(Volatility Decay)가 발생할 수 있습니다.
   </footer>
 </div>
 
 <script>
 const SIGNAL_DESC = {
-  BUY:  "QQQ가 50일·200일 이평선 위, RSI 정상, VIX 안정 — 진입 고려 구간입니다.",
-  SELL: "QQQ가 200일 이평선 아래이거나 VIX 급등 — 관망 또는 청산 구간입니다.",
+  BUY:  "QQQ > MA50·MA200, RSI 정상, VIX 안정 — 진입 고려 구간입니다.",
+  SELL: "QQQ < MA200 또는 VIX 급등 — 관망 또는 청산 구간입니다.",
   WAIT: "일부 조건 미충족 — 추세 확인 후 대기 권장입니다.",
 };
 
+// 탭 전환
+function showTab(name, el) {
+  ['signal','yield','chart'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===name ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// 국채 금리 샘플 (실제로는 fetch_data.py에서 FRED API로 가져옴)
+const YIELD = { y2: 4.72, y10: 4.38, y30: 4.61 };
+const spread = YIELD.y10 - YIELD.y2;
+
+function yieldClass(val) {
+  if (val < 3.5) return 'normal';
+  if (val < 4.5) return 'warning';
+  return 'danger';
+}
+function yieldLabel(val) {
+  if (val < 3.5) return '안정';
+  if (val < 4.5) return '주의';
+  return '위험';
+}
+
+function renderYield() {
+  const fields = [
+    {id:'y2', val:YIELD.y2}, {id:'y10', val:YIELD.y10}, {id:'y30', val:YIELD.y30}
+  ];
+  fields.forEach(({id, val}) => {
+    document.getElementById(id).textContent = val.toFixed(2) + '%';
+    document.getElementById(id).className = 'yield-val ' + (val>4.5?'down':val>3.5?'warn':'up');
+    const cls = yieldClass(val);
+    document.getElementById(id+'-status').textContent = yieldLabel(val);
+    document.getElementById(id+'-status').className = 'yield-status ' + cls;
+    document.getElementById(id+'card').className = 'yield-card ' + cls;
+  });
+
+  const sp = spread.toFixed(2);
+  document.getElementById('spread').textContent = (spread>=0?'+':'')+sp+'%';
+  document.getElementById('spread').className = 'yield-val ' + (spread<0?'down':'up');
+  const spCls = spread < -0.2 ? 'danger' : spread < 0 ? 'warning' : 'normal';
+  document.getElementById('spread-status').textContent = spread < 0 ? '역전중' : '정상';
+  document.getElementById('spread-status').className = 'yield-status ' + spCls;
+  document.getElementById('spreadcard').className = 'yield-card ' + spCls;
+
+  // 곡선 해석
+  if (spread < -0.5) {
+    document.getElementById('curve-emoji').textContent = '🔴 역전 심화';
+    document.getElementById('curve-desc').innerHTML = '<b style="color:var(--sell)">장단기 금리 역전 심화 구간</b>입니다.<br>역사적으로 경기침체 6~18개월 전 신호입니다. TQQQ 비중을 낮추고 리스크 관리를 권장합니다.';
+  } else if (spread < 0) {
+    document.getElementById('curve-emoji').textContent = '🟡 역전 중';
+    document.getElementById('curve-desc').innerHTML = '<b style="color:var(--wait)">장단기 금리 역전 상태</b>입니다.<br>2Y > 10Y로 단기 금리가 높습니다. 추세를 주시하며 진입 규모를 조절하세요.';
+  } else {
+    document.getElementById('curve-emoji').textContent = '🟢 정상';
+    document.getElementById('curve-desc').innerHTML = '<b style="color:var(--buy)">수익률 곡선 정상 상태</b>입니다.<br>10Y > 2Y로 정상적인 우상향 곡선입니다. 경기 확장 국면에서 TQQQ 진입에 유리한 환경입니다.';
+  }
+}
+
+// 메인 데이터 로드
 fetch("data.json")
   .then(r => r.json())
   .then(data => {
@@ -149,65 +381,81 @@ fetch("data.json")
     const h = data.history;
 
     document.getElementById("updated").textContent = "업데이트: " + data.updated_at;
+    document.getElementById("signal-date").textContent = t.date;
 
-    // 신호 카드
     const sig = t.signal;
-    document.getElementById("signal-card").className = "signal-card " + sig;
-    const st = document.getElementById("signal-text");
-    st.textContent = sig;
-    st.className = "signal-text " + sig;
+    const banner = document.getElementById("signal-banner");
+    banner.className = "signal-banner " + sig;
+    const badge = document.getElementById("signal-badge");
+    badge.textContent = sig;
+    badge.className = "signal-badge " + sig;
     document.getElementById("signal-desc").textContent = SIGNAL_DESC[sig];
 
     // 지표
-    const vixClass = t.vix < 25 ? "up" : t.vix < 35 ? "wait" : "down";
-    const rsiClass = t.rsi14 < 70 ? "up" : "down";
+    const vixOk = t.vix < 25;
+    const rsiOk = t.rsi14 < 70;
     document.getElementById("m-qqq").textContent  = "$" + t.qqq_price;
     document.getElementById("m-tqqq").textContent = "$" + t.tqqq_price;
     document.getElementById("m-vix").textContent  = t.vix;
-    document.getElementById("m-vix").className    = "metric-val " + vixClass;
+    document.getElementById("m-vix").className    = "val " + (vixOk?"up":t.vix<35?"warn":"down");
     document.getElementById("m-rsi").textContent  = t.rsi14;
-    document.getElementById("m-rsi").className    = "metric-val " + rsiClass;
+    document.getElementById("m-rsi").className    = "val " + (rsiOk?"up":"down");
     document.getElementById("m-ma50").textContent  = "$" + t.ma50;
     document.getElementById("m-ma200").textContent = "$" + t.ma200;
 
+    // 바 게이지
+    document.getElementById("vix-bar").style.width = Math.min(t.vix/50*100,100)+'%';
+    document.getElementById("vix-bar").style.background = vixOk?"var(--buy)":t.vix<35?"var(--wait)":"var(--sell)";
+    document.getElementById("rsi-bar").style.width = Math.min(t.rsi14,100)+'%';
+    document.getElementById("rsi-bar").style.background = rsiOk?"var(--blue)":"var(--sell)";
+
     // 조건 체크
     const conds = [
-      { label: "QQQ > MA 50일",  ok: t.qqq_price > t.ma50 },
-      { label: "QQQ > MA 200일", ok: t.qqq_price > t.ma200 },
-      { label: "RSI < 70",       ok: t.rsi14 < 70 },
-      { label: "VIX < 25",       ok: t.vix < 25 },
+      {label:"QQQ > MA 50일",  ok: t.qqq_price > t.ma50},
+      {label:"QQQ > MA 200일", ok: t.qqq_price > t.ma200},
+      {label:"RSI < 70",       ok: t.rsi14 < 70},
+      {label:"VIX < 25",       ok: t.vix < 25},
     ];
-    document.getElementById("conditions").innerHTML = conds.map(c =>
-      `<div class="cond"><div class="dot ${c.ok?'ok':'ng'}"></div>${c.label} — <b>${c.ok?'✔ 충족':'✘ 미충족'}</b></div>`
-    ).join("");
+    document.getElementById("conditions").innerHTML = conds.map(c=>`
+      <div class="cond">
+        <div class="cond-dot ${c.ok?'ok':'ng'}"></div>
+        <div class="cond-text">${c.label}</div>
+        <div class="cond-result ${c.ok?'ok':'ng'}">${c.ok?'충족':'미충족'}</div>
+      </div>`).join('');
 
-    // 가격 차트
-    const labels = h.map(d => d.date.slice(5));
-    new Chart(document.getElementById("priceChart"), {
-      type: "line",
-      data: {
-        labels,
-        datasets: [
-          { label: "QQQ",    data: h.map(d=>d.qqq),   borderColor:"#4d9fff", borderWidth:2, pointRadius:0, tension:0.3 },
-          { label: "MA 50",  data: h.map(d=>d.ma50),  borderColor:"#f0a500", borderWidth:1.5, borderDash:[4,4], pointRadius:0 },
-          { label: "MA 200", data: h.map(d=>d.ma200), borderColor:"#ff5c6a", borderWidth:1.5, borderDash:[4,4], pointRadius:0 },
-        ]
-      },
-      options: { responsive:true, plugins:{legend:{labels:{color:"#8b90a0",boxWidth:12}}}, scales:{x:{ticks:{color:"#8b90a0",maxTicksLimit:8}},y:{ticks:{color:"#8b90a0"}}} }
+    // 차트
+    const labels = h.map(d=>d.date.slice(5));
+    const chartOpts = {
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:"#6b7294",maxTicksLimit:8,font:{size:10}},grid:{color:"#1c2030"}},
+        y:{ticks:{color:"#6b7294",font:{size:10}},grid:{color:"#1c2030"}}
+      }
+    };
+    new Chart(document.getElementById("priceChart"),{
+      type:"line",
+      data:{labels,datasets:[
+        {label:"QQQ",   data:h.map(d=>d.qqq),  borderColor:"#4f9eff",borderWidth:2,pointRadius:0,tension:.3,fill:false},
+        {label:"MA50",  data:h.map(d=>d.ma50), borderColor:"#f5a623",borderWidth:1.5,borderDash:[4,3],pointRadius:0},
+        {label:"MA200", data:h.map(d=>d.ma200),borderColor:"#ff4d6a",borderWidth:1.5,borderDash:[4,3],pointRadius:0},
+      ]},
+      options:chartOpts
     });
 
-    // 신호 차트
-    const sigMap = { BUY:1, WAIT:0, SELL:-1 };
-    const sigColors = h.map(d => d.signal==="BUY"?"#00d68f":d.signal==="SELL"?"#ff5c6a":"#f0a500");
-    new Chart(document.getElementById("signalChart"), {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [{ label:"신호", data: h.map(d=>sigMap[d.signal]||0), backgroundColor: sigColors, borderRadius:3 }]
-      },
-      options: { responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:"#8b90a0",maxTicksLimit:8}},y:{ticks:{color:"#8b90a0"},min:-1.5,max:1.5}} }
+    const sigMap={BUY:1,WAIT:0,SELL:-1};
+    new Chart(document.getElementById("signalChart"),{
+      type:"bar",
+      data:{labels,datasets:[{
+        data:h.map(d=>sigMap[d.signal]||0),
+        backgroundColor:h.map(d=>d.signal==="BUY"?"#00d68f":d.signal==="SELL"?"#ff4d6a":"#f5a623"),
+        borderRadius:3,borderSkipped:false
+      }]},
+      options:{...chartOpts,scales:{...chartOpts.scales,y:{...chartOpts.scales.y,min:-1.5,max:1.5}}}
     });
   });
+
+renderYield();
 </script>
 </body>
 </html>
