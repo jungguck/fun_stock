@@ -1,14 +1,14 @@
 {
-  "updated_at": "2026-09-18 23:40",
+  "updated_at": "2026-09-22 00:19",
   "today": {
-    "date": "2026-09-18",
-    "qqq_price": 721.45,
-    "tqqq_price": 72.64,
-    "vix": 14.81,
-    "ma50": 709.95,
-    "ma200": 661.77,
-    "rsi14": 53.89,
-    "signal": "BUY"
+    "date": "2026-09-22",
+    "qqq_price": NaN,
+    "tqqq_price": NaN,
+    "vix": 14.87,
+    "ma50": NaN,
+    "ma200": NaN,
+    "rsi14": NaN,
+    "signal": "WAIT"
   },
   "history": [
     {
