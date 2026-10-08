@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-10-07 01:03",
+  "updated_at": "2026-10-08 01:22",
   "today": {
-    "date": "2026-10-07",
-    "qqq_price": 759.66,
-    "tqqq_price": 84.25,
-    "vix": 15.01,
-    "ma50": 719.24,
-    "ma200": 668.78,
-    "rsi14": 83.01,
+    "date": "2026-10-08",
+    "qqq_price": NaN,
+    "tqqq_price": NaN,
+    "vix": 15.08,
+    "ma50": NaN,
+    "ma200": NaN,
+    "rsi14": NaN,
     "signal": "WAIT"
   },
   "history": [
